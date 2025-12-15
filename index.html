@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="description" content="ORBYTE" />
   <meta name="theme-color" content="#050505">
-  <title>ORBYTE - Debug Build</title>
+  <title>ORBYTE - Final</title>
   
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <link rel="stylesheet" href="https://use.typekit.net/fdb0pds.css">
@@ -112,7 +112,7 @@
         position: fixed; bottom: 20px; left: 20px; color: #ff3333; 
         font-family: monospace; font-size: 12px; z-index: 10000; 
         max-width: 80%; background: rgba(0,0,0,0.8); padding: 10px;
-        display: none; /* Hidden unless error */
+        display: none;
     }
 </style>
 </head>
@@ -122,13 +122,12 @@
   <!-- DEBUG LOGGER -->
   <div id="debug-log"></div>
   <script>
-      // Global Error Handler to catch Script/Network failures
       window.onerror = function(msg, url, line) {
           const d = document.getElementById('debug-log');
           d.style.display = 'block';
-          d.innerHTML += `ERROR: ${msg}<br>Line: ${line}<br>`;
-          // Force open if error occurs
-          setTimeout(() => document.getElementById('loader').classList.add('hidden'), 1000);
+          d.innerHTML += `ERR: ${msg}<br>L: ${line}<br>`;
+          // Failsafe: Hide loader so site is usable
+          setTimeout(() => document.getElementById('loader').classList.add('hidden'), 500);
       };
   </script>
 
@@ -184,6 +183,7 @@
       <div style="height: 50vh;"></div>
   </main>
 
+  <!-- LIBS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
@@ -193,11 +193,12 @@
   </script>
 
   <script type="module">
-    try {
-        import * as THREE from 'three';
-        import Lenis from 'lenis';
+    // --- 1. TOP LEVEL IMPORTS (CORRECT) ---
+    import * as THREE from 'three';
+    import Lenis from 'lenis';
 
-        // --- 1. GLOBAL SETUP ---
+    // WRAP EXECUTION IN TRY/CATCH
+    try {
         const IS_PHONE = window.matchMedia('(max-width: 768px)').matches;
         gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
@@ -247,7 +248,7 @@
             renderer.toneMappingExposure = 1.1;
         }
         
-        // Context Loss Recovery
+        // Recover lost context
         renderer.getContext().canvas.addEventListener('webglcontextlost', (e) => {
             e.preventDefault();
             location.reload(); 
@@ -258,7 +259,6 @@
         // --- 4. ASSETS ---
         const manager = new THREE.LoadingManager();
         
-        // Force start function
         const revealSite = () => {
             const loader = document.getElementById('loader');
             const canvas = document.getElementById('canvas-container');
@@ -270,15 +270,12 @@
             }
         };
 
-        // Manager Events
         manager.onLoad = revealSite;
-        manager.onError = (url) => console.log('Asset err (ignored):', url);
+        manager.onError = (url) => console.log('Err ignored:', url);
 
         const texLoader = new THREE.TextureLoader(manager);
-        // UNPKG CDN (Fastest/Safest)
+        // UNPKG CDN
         const CDN = 'https://unpkg.com/three-globe/example/img/';
-        
-        // Helper to load without crashing
         const safeLoad = (url) => texLoader.load(url, undefined, undefined, (e) => console.warn('Tex fail', e));
 
         const earthGroup = new THREE.Group();
@@ -349,7 +346,6 @@
         let scrollTL;
         function buildTimeline() {
             if(scrollTL) scrollTL.kill();
-            
             earthGroup.position.set(KF.hero.pos.x, KF.hero.pos.y, KF.hero.pos.z);
             
             scrollTL = gsap.timeline({
@@ -362,29 +358,25 @@
                 }
             });
 
-            // Timelines
+            // Order: Label -> Animation
             scrollTL.addLabel('hero')
             
-            // Hero -> About
             .addLabel('about') 
             .to(earthGroup.position, { ...KF.about.pos, duration: 2, ease: 'power2.inOut' })
             .to(earthGroup.rotation, { y: KF.about.rot.y, duration: 2, ease: 'power2.inOut' }, '<')
             
-            // About -> Services
             .addLabel('services')
             .to(earthGroup.position, { ...KF.services.pos, duration: 2, ease: 'power2.inOut' })
             .to(earthGroup.rotation, { y: KF.services.rot.y, duration: 2, ease: 'power2.inOut' }, '<')
             .to(sunMesh.position,    { ...KF.services.sunPos, duration: 2, ease: 'power2.inOut' }, '<')
             .to(sunLight.position,   { ...KF.services.sunPos, duration: 2, ease: 'power2.inOut' }, '<')
 
-            // Services -> Realism
             .addLabel('realism')
             .to(earthGroup.position, { ...KF.realism.pos, duration: 2, ease: 'power2.inOut' })
             .to(earthGroup.rotation, { y: KF.realism.rot.y, x: 0.2, duration: 2, ease: 'power2.inOut' }, '<')
             .to(sunMesh.position,    { ...KF.realism.sunPos, duration: 2, ease: 'power2.inOut' }, '<')
             .to(sunLight.position,   { ...KF.realism.sunPos, duration: 2, ease: 'power2.inOut' }, '<')
 
-            // Realism -> Contact
             .addLabel('contact')
             .to(earthGroup.position, { ...KF.contact.pos, duration: 2, ease: 'power2.inOut' })
             .to('#canvas-container', { opacity: 0.3, duration: 2 }, '<');
@@ -396,8 +388,7 @@
             renderer.render(scene, camera);
         }
 
-        // --- 7. FAILSAFE TIMEOUT ---
-        // If loading takes > 4 seconds, force open
+        // --- 7. FAILSAFE ---
         setTimeout(revealSite, 4000);
 
         // --- 8. EVENTS ---
@@ -420,10 +411,12 @@
         document.querySelectorAll('.content-box').forEach(box => {
             gsap.to(box, { opacity: 1, y: 0, duration: 0.8, scrollTrigger: { trigger: box.parentElement, start: "top 60%", toggleActions: "play reverse play reverse" } });
         });
-    } catch (err) {
-        console.error("CRITICAL:", err);
-        // Fallback: Remove loader so text is visible even if 3D dies
-        document.getElementById('loader').style.display = 'none';
+
+    } catch (e) {
+        // CATCH-ALL ERROR HANDLER
+        console.error(e);
+        document.getElementById('debug-log').innerHTML += `FATAL: ${e.message}`;
+        document.getElementById('loader').classList.add('hidden');
     }
   </script>
 </body>
