@@ -3,15 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="description" content="ORBYTE" />
-  <meta name="theme-color" content="#050505">
-  <title>ORBYTE - Final</title>
+  <title>ORBYTE - Powered by ThreeGlobe</title>
   
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <link rel="stylesheet" href="https://use.typekit.net/fdb0pds.css">
 
   <style>
-    /* --- CORE STYLES --- */
+    /* --- RESET --- */
     *,:after,:before{box-sizing:border-box;margin:0;padding:0}
     html,body{background-color:#050505;color:#fff;font-family:itc-avant-garde-gothic-pro,sans-serif;width:100%; height:100%;}
     body{margin:0; overflow-x: hidden;}
@@ -22,114 +20,73 @@
     .lenis.lenis-stopped { overflow: hidden; }
 
     /* LAYOUT */
-    #canvas-container {
+    #globe-container {
         position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-        z-index: 0; pointer-events: none;
-        opacity: 0; transition: opacity 1s ease;
+        z-index: 0; 
+        transition: opacity 1s ease;
     }
-    #canvas-container.visible { opacity: 1; }
 
     #content-wrapper { position: relative; z-index: 10; }
     
     .section-wrap {
-        position: relative;
-        min-height: 100vh; 
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: 0 8vw;
-        pointer-events: none; 
+        position: relative; min-height: 100vh; width: 100%;
+        display: flex; flex-direction: column; justify-content: center;
+        padding: 0 8vw; pointer-events: none; 
     }
     
     h1, h2, p, a, button { pointer-events: auto; }
 
-    .content-box {
-        width: 100%; max-width: 600px;
-        opacity: 0; transform: translateY(30px);
-    }
+    .content-box { width: 100%; max-width: 600px; opacity: 0; transform: translateY(30px); }
 
     /* TYPOGRAPHY */
     .uppercase { text-transform: uppercase; }
     .font-bold { font-weight: 700; }
     .text-huge { 
-        font-size: clamp(2.5rem, 8vw, 5rem); 
-        line-height: 0.95; 
-        letter-spacing: -0.02em; 
-        margin-bottom: 20px;
+        font-size: clamp(2.5rem, 8vw, 5rem); line-height: 0.95; 
+        letter-spacing: -0.02em; margin-bottom: 20px;
     }
     .label-text { 
         font-size: 11px; letter-spacing: 2px; display:block; 
         margin-bottom: 15px; color: #fff; opacity: 0.7;
     }
-    .desc-text { color: #aaa; line-height: 1.5; font-size: 1rem; max-width: 90%; }
     .red-text { color: #ff3333; font-size: 0.9rem; margin-top: 15px; display: block; }
     
     /* SECTIONS */
     #sec-hero { justify-content: flex-end; padding-bottom: 15vh; }
     #sec-about { justify-content: center; } 
-    #sec-about .content-box { margin-right: auto; }
     #sec-services { justify-content: flex-end; padding-bottom: 15vh; }
     #sec-realism { justify-content: center; text-align: center; }
-    #sec-realism .content-box { margin: 0 auto; }
     #sec-contact { justify-content: center; text-align: center; }
-    #sec-contact .content-box { margin: 0 auto; }
 
     /* NAV */
     nav { 
-        position: fixed; top: 0; left: 0; width: 100%; 
-        padding: 30px; 
-        display: flex; justify-content: space-between; 
-        align-items: center;
-        z-index: 50; 
-        mix-blend-mode: difference;
+        position: fixed; top: 0; left: 0; width: 100%; padding: 30px; 
+        display: flex; justify-content: space-between; align-items: center;
+        z-index: 50; mix-blend-mode: difference;
     }
     .logo { font-weight: 700; font-size: 20px; letter-spacing: -1px; text-decoration: none; }
     .nav-btn { 
         background: transparent; color: white; border: 1px solid rgba(255,255,255,0.5); 
-        padding: 8px 24px; border-radius: 50px; font-size: 12px; text-transform: uppercase; 
-        letter-spacing: 1px; cursor: pointer; transition: all 0.3s;
+        padding: 8px 24px; border-radius: 50px; font-size: 12px; 
+        text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
     }
-    .nav-btn:hover { background: white; color: black; }
 
-    /* LOADER - CSS ONLY FADE */
+    /* LOADER */
     #loader { 
         position: fixed; inset: 0; background: #000; z-index: 999; 
         display: flex; flex-direction: column; align-items: center; justify-content: center; 
         transition: opacity 0.8s ease, visibility 0.8s;
     }
     #loader.hidden { opacity: 0; visibility: hidden; }
-
     .loader-ring {
         width: 50px; height: 50px; border: 2px solid #333; border-top: 2px solid #fff; 
-        border-radius: 50%; margin-bottom: 15px;
-        animation: spin 1s linear infinite;
+        border-radius: 50%; margin-bottom: 15px; animation: spin 1s linear infinite;
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-    /* DEBUG LOG */
-    #debug-log {
-        position: fixed; bottom: 20px; left: 20px; color: #ff3333; 
-        font-family: monospace; font-size: 12px; z-index: 10000; 
-        max-width: 80%; background: rgba(0,0,0,0.8); padding: 10px;
-        display: none;
-    }
-</style>
+  </style>
 </head>
 
 <body>
-
-  <!-- DEBUG LOGGER -->
-  <div id="debug-log"></div>
-  <script>
-      window.onerror = function(msg, url, line) {
-          const d = document.getElementById('debug-log');
-          d.style.display = 'block';
-          d.innerHTML += `ERR: ${msg}<br>L: ${line}<br>`;
-          // Failsafe: Hide loader so site is usable
-          setTimeout(() => document.getElementById('loader').classList.add('hidden'), 500);
-      };
-  </script>
 
   <div id="loader">
       <div class="loader-ring"></div>
@@ -137,11 +94,11 @@
   </div>
 
   <nav>
-    <a href="#" class="logo" aria-label="Orbyte Home">O R B Y T E</a>
+    <a href="#" class="logo">O R B Y T E</a>
     <button class="nav-btn" onclick="scrollToContact()">CONTACT</button>
   </nav>
 
-  <div id="canvas-container"></div>
+  <div id="globe-container"></div>
 
   <main id="content-wrapper">
       <section class="section-wrap" id="sec-hero">
@@ -156,7 +113,6 @@
           <div class="content-box">
               <span class="label-text">ABOUT US</span>
               <h1 class="text-huge font-bold uppercase">GLOBAL DESIGN<br>& DEVELOPMENT.</h1>
-              <div style="margin-top: 20px; font-size: 12px; opacity: 0.6; text-transform: uppercase;">Click to View Portfolio <br> ↓</div>
           </div>
       </section>
 
@@ -177,7 +133,7 @@
       <section class="section-wrap" id="sec-contact">
           <div class="content-box">
               <h1 class="text-huge font-bold uppercase">SEND US<br>YOUR QUERY.</h1>
-              <a href="mailto:contact@orbyte.studio" rel="noopener noreferrer" style="font-size: 1.2rem; border-bottom: 1px solid white; display: inline-block; margin-top: 20px;">contact@orbyte.studio</a>
+              <a href="mailto:contact@orbyte.studio" style="font-size: 1.2rem; border-bottom: 1px solid white; display: inline-block; margin-top: 20px;">contact@orbyte.studio</a>
           </div>
       </section>
       <div style="height: 50vh;"></div>
@@ -189,235 +145,187 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
 
   <script type="importmap">
-    { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "lenis": "https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.esm.min.js" } }
+    { 
+      "imports": { 
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js", 
+        "three-globe": "https://unpkg.com/three-globe@2.31.1/dist/three-globe.module.js",
+        "lenis": "https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.esm.min.js" 
+      } 
+    }
   </script>
 
   <script type="module">
-    // --- 1. TOP LEVEL IMPORTS (CORRECT) ---
     import * as THREE from 'three';
+    import ThreeGlobe from 'three-globe';
     import Lenis from 'lenis';
 
-    // WRAP EXECUTION IN TRY/CATCH
-    try {
-        const IS_PHONE = window.matchMedia('(max-width: 768px)').matches;
-        gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+    // --- 1. SETUP ---
+    const IS_PHONE = window.matchMedia('(max-width: 768px)').matches;
+    gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
-        // --- 2. LENIS ---
-        const lenis = new Lenis({
-            duration: IS_PHONE ? 1.0 : 1.2,
-            easing: t => 1 - Math.pow(1 - t, 4),
-            smoothWheel: !IS_PHONE, 
-            smoothTouch: IS_PHONE,
-            touchInertiaMultiplier: 1.5,
-            lerp: 0.1
-        });
+    // LENIS
+    const lenis = new Lenis({
+        duration: IS_PHONE ? 1.0 : 1.2,
+        easing: t => 1 - Math.pow(1 - t, 4),
+        smoothWheel: !IS_PHONE, 
+        smoothTouch: IS_PHONE,
+        touchInertiaMultiplier: 1.5
+    });
 
-        ScrollTrigger.scrollerProxy(document.body, {
-            scrollTop(value) {
-                return value != null 
-                    ? lenis.scrollTo(value, { duration: 0, immediate: true }) 
-                    : lenis.scroll;
-            },
-            getBoundingClientRect() { return { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight }; }
-        });
+    ScrollTrigger.scrollerProxy(document.body, {
+        scrollTop(value) { return value != null ? lenis.scrollTo(value, {duration:0, immediate:true}) : lenis.scroll; },
+        getBoundingClientRect() { return { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight }; }
+    });
+    function raf(time) { lenis.raf(time); ScrollTrigger.update(); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
 
-        function raf(time) {
-            lenis.raf(time);
-            ScrollTrigger.update();
-            requestAnimationFrame(raf);
-        }
-        requestAnimationFrame(raf);
+    // THREE SCENE
+    const container = document.getElementById('globe-container');
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x050505, 0.002);
+    
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 300; // Start far back for ThreeGlobe scale
 
-        // --- 3. SCENE ---
-        const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x050505, 0.002);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(IS_PHONE ? 1.0 : Math.min(window.devicePixelRatio, 1.5));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    container.appendChild(renderer.domElement);
 
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
-        camera.position.z = 10;
+    // LIGHTS
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+    const dLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    dLight.position.set(-200, 100, 200);
+    scene.add(dLight);
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(IS_PHONE ? 1.0 : Math.min(window.devicePixelRatio, 1.5));
-        
-        renderer.outputColorSpace = THREE.SRGBColorSpace;
-        if(IS_PHONE) {
-            renderer.toneMapping = THREE.NoToneMapping;
-        } else {
-            renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.1;
-        }
-        
-        // Recover lost context
-        renderer.getContext().canvas.addEventListener('webglcontextlost', (e) => {
-            e.preventDefault();
-            location.reload(); 
-        });
+    // --- 2. THREE GLOBE ---
+    const Globe = new ThreeGlobe()
+      .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+      .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+      .atmosphereColor('#3a228a')
+      .atmosphereAltitude(0.15);
 
-        container.appendChild(renderer.domElement);
+    // Custom material adjustments for the "Dark Mode" look
+    Globe.globeMaterial().specular = new THREE.Color(0x222222);
+    Globe.globeMaterial().shininess = 8;
+    
+    scene.add(Globe);
 
-        // --- 4. ASSETS ---
-        const manager = new THREE.LoadingManager();
-        
-        const revealSite = () => {
-            const loader = document.getElementById('loader');
-            const canvas = document.getElementById('canvas-container');
-            if(loader && !loader.classList.contains('hidden')) {
-                loader.classList.add('hidden');
-                canvas.classList.add('visible');
-                buildTimeline();
-                animate();
-            }
-        };
-
-        manager.onLoad = revealSite;
-        manager.onError = (url) => console.log('Err ignored:', url);
-
-        const texLoader = new THREE.TextureLoader(manager);
-        // UNPKG CDN
-        const CDN = 'https://unpkg.com/three-globe/example/img/';
-        const safeLoad = (url) => texLoader.load(url, undefined, undefined, (e) => console.warn('Tex fail', e));
-
-        const earthGroup = new THREE.Group();
-        scene.add(earthGroup);
-
-        const earthRes = IS_PHONE ? 32 : 64;
-        const earthGeo = new THREE.SphereGeometry(3, earthRes, earthRes);
-        
-        const earthMat = new THREE.MeshPhongMaterial({
-            map: safeLoad(CDN + 'earth-blue-marble.jpg'),
-            specularMap: safeLoad(CDN + 'earth-water.png'),
-            normalMap: safeLoad(CDN + 'earth-topology.png'),
-            normalScale: new THREE.Vector2(0.5, 0.5),
-            specular: 0x333333,
-            shininess: 5
-        });
-        const earth = new THREE.Mesh(earthGeo, earthMat);
-        earthGroup.add(earth);
-
-        // Atmosphere
-        const atmosMat = new THREE.ShaderMaterial({
-            vertexShader: `varying vec3 vNormal; void main() { vNormal = normalize(normalMatrix * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
-            fragmentShader: `varying vec3 vNormal; void main() { float intensity = pow(0.65 - dot(vNormal, vec3(0, 0, 1.0)), 3.0); gl_FragColor = vec4(0.1, 0.5, 1.0, 1.0) * intensity; }`,
-            blending: THREE.AdditiveBlending, side: THREE.BackSide, transparent: true
-        });
-        const atmos = new THREE.Mesh(new THREE.SphereGeometry(3.2, earthRes, earthRes), atmosMat);
-        earthGroup.add(atmos);
-
-        // Sun
-        const sunMesh = new THREE.Mesh(new THREE.SphereGeometry(4, 32, 32), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-        sunMesh.position.set(20, 10, 0);
-        scene.add(sunMesh);
-
-        // Stars
-        const starCount = IS_PHONE ? 800 : 2000;
-        const starGeo = new THREE.BufferGeometry();
-        const starPos = [];
-        for(let i=0; i<starCount; i++) starPos.push((Math.random()-0.5)*600, (Math.random()-0.5)*600, (Math.random()-0.5)*600);
-        starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
-        const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({color: 0x888888, size: 0.5}));
-        scene.add(stars);
-
-        const sunLight = new THREE.DirectionalLight(0xffffff, 2.0);
-        sunLight.position.set(10, 5, 10);
-        scene.add(sunLight);
-        scene.add(new THREE.AmbientLight(0x050505));
-
-        // --- 5. KEYFRAMES ---
-        const KF_DESKTOP = {
-            hero:     { pos:{x:3.5, y:0, z:0},    rot:{y:0},   sunPos:{x:10, y:5, z:5},  camZ:10 },
-            about:    { pos:{x:0, y:0, z:-8},     rot:{y:2},   sunPos:{x:10, y:5, z:5},  camZ:10 },
-            services: { pos:{x:4, y:-2, z:-2},    rot:{y:3.5}, sunPos:{x:-6, y:2, z:-5}, camZ:10 },
-            realism:  { pos:{x:0, y:0, z:0},      rot:{y:5},   sunPos:{x:0, y:0, z:-15}, camZ:10 },
-            contact:  { pos:{x:0, y:0, z:-20},    rot:{y:5.5}, sunPos:{x:0, y:0, z:-15}, camZ:10 }
-        };
-
-        const KF_PHONE = {
-            hero:     { pos:{x:0, y:1.2, z:0},    rot:{y:0},   sunPos:{x:10, y:5, z:5},  camZ:10 },
-            about:    { pos:{x:0, y:2.5, z:-12},  rot:{y:2},   sunPos:{x:10, y:5, z:5},  camZ:10 }, 
-            services: { pos:{x:1.5, y:-2, z:-5},  rot:{y:3.5}, sunPos:{x:-3, y:2, z:-5}, camZ:10 }, 
-            realism:  { pos:{x:0, y:0, z:0},      rot:{y:5},   sunPos:{x:0, y:0, z:-15}, camZ:10 },
-            contact:  { pos:{x:0, y:0, z:-20},    rot:{y:5.5}, sunPos:{x:0, y:0, z:-15}, camZ:10 }
-        };
-
-        const KF = IS_PHONE ? KF_PHONE : KF_DESKTOP;
-
-        // --- 6. TIMELINE ---
-        let scrollTL;
-        function buildTimeline() {
-            if(scrollTL) scrollTL.kill();
-            earthGroup.position.set(KF.hero.pos.x, KF.hero.pos.y, KF.hero.pos.z);
-            
-            scrollTL = gsap.timeline({
-                scrollTrigger: {
-                    trigger: '#content-wrapper',
-                    start: 'top top',
-                    end: 'bottom bottom',
-                    scrub: 1,
-                    snap: { snapTo: 'labels', duration: {min:0.2, max:0.8}, delay: 0, ease: 'power1.inOut' }
-                }
-            });
-
-            // Order: Label -> Animation
-            scrollTL.addLabel('hero')
-            
-            .addLabel('about') 
-            .to(earthGroup.position, { ...KF.about.pos, duration: 2, ease: 'power2.inOut' })
-            .to(earthGroup.rotation, { y: KF.about.rot.y, duration: 2, ease: 'power2.inOut' }, '<')
-            
-            .addLabel('services')
-            .to(earthGroup.position, { ...KF.services.pos, duration: 2, ease: 'power2.inOut' })
-            .to(earthGroup.rotation, { y: KF.services.rot.y, duration: 2, ease: 'power2.inOut' }, '<')
-            .to(sunMesh.position,    { ...KF.services.sunPos, duration: 2, ease: 'power2.inOut' }, '<')
-            .to(sunLight.position,   { ...KF.services.sunPos, duration: 2, ease: 'power2.inOut' }, '<')
-
-            .addLabel('realism')
-            .to(earthGroup.position, { ...KF.realism.pos, duration: 2, ease: 'power2.inOut' })
-            .to(earthGroup.rotation, { y: KF.realism.rot.y, x: 0.2, duration: 2, ease: 'power2.inOut' }, '<')
-            .to(sunMesh.position,    { ...KF.realism.sunPos, duration: 2, ease: 'power2.inOut' }, '<')
-            .to(sunLight.position,   { ...KF.realism.sunPos, duration: 2, ease: 'power2.inOut' }, '<')
-
-            .addLabel('contact')
-            .to(earthGroup.position, { ...KF.contact.pos, duration: 2, ease: 'power2.inOut' })
-            .to('#canvas-container', { opacity: 0.3, duration: 2 }, '<');
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            earth.rotation.y += 0.0005;
-            renderer.render(scene, camera);
-        }
-
-        // --- 7. FAILSAFE ---
-        setTimeout(revealSite, 4000);
-
-        // --- 8. EVENTS ---
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            buildTimeline();
-        });
-
-        window.addEventListener('orientationchange', () => {
-            setTimeout(() => ScrollTrigger.refresh(), 350);
-        });
-
-        window.scrollToContact = () => {
-            const scrollY = ScrollTrigger.labelToScroll('contact');
-            lenis.scrollTo(scrollY, { duration: 2, easing: (t) => 1 - Math.pow(1 - t, 4) });
-        };
-
-        document.querySelectorAll('.content-box').forEach(box => {
-            gsap.to(box, { opacity: 1, y: 0, duration: 0.8, scrollTrigger: { trigger: box.parentElement, start: "top 60%", toggleActions: "play reverse play reverse" } });
-        });
-
-    } catch (e) {
-        // CATCH-ALL ERROR HANDLER
-        console.error(e);
-        document.getElementById('debug-log').innerHTML += `FATAL: ${e.message}`;
-        document.getElementById('loader').classList.add('hidden');
+    // STARS
+    const starGeo = new THREE.BufferGeometry();
+    const starCount = IS_PHONE ? 1000 : 3000;
+    const starPos = [];
+    for(let i=0; i<starCount; i++) {
+        starPos.push((Math.random()-0.5)*800, (Math.random()-0.5)*800, (Math.random()-0.5)*800);
     }
+    starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
+    const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({color: 0x888888, size: 0.7}));
+    scene.add(stars);
+
+    // --- 3. ANIMATION & TIMELINE ---
+    // Note: ThreeGlobe scale is roughly 100 units radius by default (scale 1)
+    
+    // Keyframes (Adapted for Globe Scale)
+    // Desktop
+    const KF_DESKTOP = {
+        hero:     { pos:{x:80, y:0, z:0},     rot:{y:0},   camZ:300 },
+        about:    { pos:{x:0, y:0, z:-150},   rot:{y:2},   camZ:300 },
+        services: { pos:{x:100, y:-30, z:-50},rot:{y:3.5}, camZ:300 },
+        realism:  { pos:{x:0, y:0, z:0},      rot:{y:5, x:0.5}, camZ:250 }, // Zoom in
+        contact:  { pos:{x:0, y:0, z:-400},   rot:{y:5.5}, camZ:300 }
+    };
+
+    // Mobile
+    const KF_PHONE = {
+        hero:     { pos:{x:0, y:40, z:0},     rot:{y:0},   camZ:300 },
+        about:    { pos:{x:0, y:60, z:-200},  rot:{y:2},   camZ:300 },
+        services: { pos:{x:40, y:-40, z:-50}, rot:{y:3.5}, camZ:300 },
+        realism:  { pos:{x:0, y:0, z:0},      rot:{y:5, x:0.5}, camZ:280 },
+        contact:  { pos:{x:0, y:0, z:-400},   rot:{y:5.5}, camZ:300 }
+    };
+
+    const KF = IS_PHONE ? KF_PHONE : KF_DESKTOP;
+    let scrollTL;
+
+    function buildTimeline() {
+        if(scrollTL) scrollTL.kill();
+        
+        Globe.position.set(KF.hero.pos.x, KF.hero.pos.y, KF.hero.pos.z);
+        Globe.rotation.y = KF.hero.rot.y;
+        camera.position.z = KF.hero.camZ;
+
+        scrollTL = gsap.timeline({
+            scrollTrigger: {
+                trigger: '#content-wrapper',
+                start: 'top top',
+                end: 'bottom bottom',
+                scrub: 1,
+                snap: { snapTo: 'labels', duration: {min:0.2, max:0.8}, delay: 0, ease: 'power1.inOut' }
+            }
+        });
+
+        // 1. HERO
+        scrollTL.addLabel('hero')
+        
+        // 2. ABOUT
+        .addLabel('about') 
+        .to(Globe.position, { ...KF.about.pos, duration: 2, ease: 'power2.inOut' })
+        .to(Globe.rotation, { y: KF.about.rot.y, duration: 2, ease: 'power2.inOut' }, '<')
+        .to(camera.position, { z: KF.about.camZ, duration: 2, ease: 'power2.inOut' }, '<')
+
+        // 3. SERVICES
+        .addLabel('services')
+        .to(Globe.position, { ...KF.services.pos, duration: 2, ease: 'power2.inOut' })
+        .to(Globe.rotation, { y: KF.services.rot.y, duration: 2, ease: 'power2.inOut' }, '<')
+        .to(camera.position, { z: KF.services.camZ, duration: 2, ease: 'power2.inOut' }, '<')
+
+        // 4. REALISM
+        .addLabel('realism')
+        .to(Globe.position, { ...KF.realism.pos, duration: 2, ease: 'power2.inOut' })
+        .to(Globe.rotation, { y: KF.realism.rot.y, x: (KF.realism.rot.x || 0), duration: 2, ease: 'power2.inOut' }, '<')
+        .to(camera.position, { z: KF.realism.camZ, duration: 2, ease: 'power2.inOut' }, '<')
+
+        // 5. CONTACT
+        .addLabel('contact')
+        .to(Globe.position, { ...KF.contact.pos, duration: 2, ease: 'power2.inOut' })
+        .to('#globe-container', { opacity: 0.3, duration: 2 }, '<');
+    }
+
+    // --- 4. START ---
+    // Loader Failsafe
+    setTimeout(() => {
+        document.getElementById('loader').classList.add('hidden');
+    }, 1500); // 3-Globe loads very fast
+
+    function animate() {
+        requestAnimationFrame(animate);
+        if(Globe) Globe.rotation.y += 0.0005;
+        renderer.render(scene, camera);
+    }
+    
+    // Init
+    buildTimeline();
+    animate();
+
+    // Resize
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        buildTimeline();
+    });
+
+    window.scrollToContact = () => {
+        const scrollY = ScrollTrigger.labelToScroll('contact');
+        lenis.scrollTo(scrollY, { duration: 2, easing: (t) => 1 - Math.pow(1 - t, 4) });
+    };
+
+    document.querySelectorAll('.content-box').forEach(box => {
+        gsap.to(box, { opacity: 1, y: 0, duration: 0.8, scrollTrigger: { trigger: box.parentElement, start: "top 60%", toggleActions: "play reverse play reverse" } });
+    });
+
   </script>
 </body>
 </html>
