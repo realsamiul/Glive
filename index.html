@@ -1,401 +1,330 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ORBYTE REIMAGINED</title>
-    <style>
-        /* --- ORBYTE STYLE TYPOGRAPHY & LAYOUT --- */
-        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;500;700&display=swap');
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ORBYTE - Design & Development Studio</title>
+  
+  <!-- FONTS & ICONS -->
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="https://use.typekit.net/fdb0pds.css">
 
-        body {
-            margin: 0;
-            background-color: #050505;
-            color: #ffffff;
-            font-family: 'Manrope', sans-serif;
-            overflow-x: hidden; /* Hide horizontal scroll */
-        }
+  <!-- YOUR ORIGINAL CSS (Embedded for portability) -->
+  <style>
+    /* --- PASTE OF index-DQ6fQa08.css (Minified Tailwind) --- */
+    *,:after,:before{box-sizing:border-box;border:0 solid;margin:0;padding:0}html,body{background-color:#050505;color:#fff;font-family:itc-avant-garde-gothic-pro,sans-serif}body{margin:0;overflow-x:hidden;width:100%}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.inset-0{top:0;right:0;bottom:0;left:0}.w-full{width:100%}.h-full{height:100%}.h-screen{height:100vh}.flex{display:flex}.flex-col{flex-direction:column}.justify-between{justify-content:space-between}.items-center{align-items:center}.uppercase{text-transform:uppercase}.text-5xl{font-size:3rem;line-height:1}.font-bold{font-weight:700}.opacity-50{opacity:0.5}.z-10{z-index:10}.pointer-events-none{pointer-events:none}.pointer-events-auto{pointer-events:auto}
+    
+    /* --- CUSTOM OVERRIDES FOR 3D ENGINE --- */
+    html.lenis { height: auto; } 
+    .lenis.lenis-smooth { scroll-behavior: auto; } 
+    .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; } 
+    .lenis.lenis-stopped { overflow: hidden; } 
+    .lenis.lenis-scrolling iframe { pointer-events: none; }
 
-        /* The 3D Canvas - Fixed in background */
-        #canvas-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -1;
-            pointer-events: none; /* Let clicks pass through to scroll */
-        }
+    #canvas-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: -1;
+        background: #050505;
+    }
 
-        /* Loading Screen */
-        #loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 1s ease-out;
-        }
-        .loader-bar { width: 200px; height: 2px; background: #333; margin-top: 15px; }
-        .loader-progress { width: 0%; height: 100%; background: #fff; transition: width 0.2s; }
+    /* Layout Spacing matching Orbyte */
+    .section-wrap {
+        position: relative;
+        min-height: 100vh; /* Critical for ScrollTrigger spacing */
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0 5vw;
+        z-index: 10;
+        pointer-events: none; /* Text doesn't block scroll */
+    }
+    
+    .content-box {
+        pointer-events: auto;
+        max-width: 800px;
+        opacity: 0; /* Animated by GSAP */
+        transform: translateY(30px);
+    }
 
-        /* Navigation (Visual only) */
-        nav {
-            position: fixed;
-            top: 40px;
-            width: 90%;
-            left: 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 10;
-            mix-blend-mode: difference;
-        }
-        .logo { font-weight: 700; font-size: 1.5rem; letter-spacing: -1px; }
-        .nav-links span { margin-left: 30px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
-        .btn-contact { border: 1px solid white; padding: 10px 25px; border-radius: 50px; }
+    /* Section Specific Alignments */
+    #sec-hero { align-items: flex-start; justify-content: flex-end; padding-bottom: 20vh; }
+    #sec-about { align-items: flex-end; text-align: right; }
+    #sec-services { align-items: center; text-align: center; }
+    #sec-realism { align-items: flex-start; padding-top: 20vh; }
+    
+    /* Nav */
+    nav { position: fixed; top: 0; left: 0; width: 100%; padding: 40px 50px; display: flex; justify-content: space-between; z-index: 50; mix-blend-mode: difference; }
+    .logo { font-weight: 700; font-size: 24px; letter-spacing: -1px; }
+    .nav-items span { margin-left: 30px; font-size: 14px; text-transform: uppercase; cursor: pointer; letter-spacing: 1px; }
 
-        /* --- SCROLL SECTIONS --- */
-        /* These invisible sections drive the scroll animation */
-        .section {
-            height: 100vh;
-            width: 100%;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding-left: 10%;
-            pointer-events: none; /* Allow scrolling through */
-        }
-        
-        .content {
-            pointer-events: auto;
-            max-width: 600px;
-            opacity: 0; /* Hidden initially, revealed by GSAP */
-            transform: translateY(50px);
-        }
-
-        h1 { font-size: 4rem; line-height: 1.1; margin-bottom: 20px; font-weight: 300; }
-        h1 b { font-weight: 700; }
-        p { font-size: 1.1rem; line-height: 1.6; color: #aaa; margin-bottom: 30px; }
-        .subtitle { color: #888; text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem; margin-bottom: 15px; display: block; }
-        
-        /* Specific layouts matching the image */
-        #sec1 { justify-content: flex-end; padding-bottom: 15vh; }
-        #sec2 { align-items: flex-end; padding-right: 10%; text-align: right; }
-        #sec3 { align-items: center; text-align: center; padding-left: 0; }
-        #sec4 { justify-content: center; padding-left: 10%; }
-
-    </style>
+    /* Loader */
+    #loader { position: fixed; inset: 0; background: #000; z-index: 999; display: flex; align-items: center; justify-content: center; transition: opacity 0.5s; }
+  </style>
 </head>
+
 <body>
 
-    <!-- LOADING SCREEN -->
-    <div id="loader">
-        <div style="letter-spacing: 3px; font-size: 0.8rem;">INITIALIZING ENVIRONMENT</div>
-        <div class="loader-bar"><div class="loader-progress" id="progress"></div></div>
+  <!-- LOADING SCREEN -->
+  <div id="loader">
+    <div style="letter-spacing: 4px; font-size: 12px;">INITIALIZING SYSTEMS...</div>
+  </div>
+
+  <!-- UI LAYERS -->
+  <nav>
+    <div class="logo">O R B Y T E</div>
+    <div class="nav-items">
+        <span>About</span>
+        <span>Services</span>
+        <span style="border: 1px solid white; padding: 8px 20px; border-radius: 20px;">Contact</span>
     </div>
+  </nav>
 
-    <!-- UI HEADER -->
-    <nav>
-        <div class="logo">O R B Y T E</div>
-        <div class="nav-links">
-            <span>About Us</span>
-            <span>Services</span>
-            <span class="btn-contact">Contact</span>
-        </div>
-    </nav>
+  <!-- 3D CANVAS -->
+  <div id="canvas-container"></div>
 
-    <!-- 3D BACKGROUND -->
-    <div id="canvas-container"></div>
+  <!-- SCROLLABLE CONTENT WRAPPER -->
+  <main id="content-wrapper">
+      
+      <!-- 1. HERO -->
+      <section class="section-wrap" id="sec-hero">
+          <div class="content-box">
+              <span style="font-size: 12px; letter-spacing: 2px; display:block; margin-bottom: 20px;">MAIN</span>
+              <h1 class="text-5xl font-bold uppercase">We Create<br>User Experiences.</h1>
+              <div style="margin-top: 20px; color: #666;">Lockdown Off</div>
+          </div>
+      </section>
 
-    <!-- SCROLLABLE CONTENT -->
-    <main>
-        <!-- SECTION 1: SATELLITE FOCUS -->
-        <div class="section" id="sec1">
-            <div class="content">
-                <span class="subtitle">MAIN</span>
-                <h1>WE CREATE<br><b>USER EXPERIENCES.</b></h1>
-                <p>Lockdown Off</p>
-            </div>
-        </div>
+      <!-- 2. ABOUT -->
+      <section class="section-wrap" id="sec-about">
+          <div class="content-box">
+              <span style="font-size: 12px; letter-spacing: 2px; display:block; margin-bottom: 20px;">ABOUT US</span>
+              <h1 class="text-5xl font-bold uppercase">Global Design<br>& Development.</h1>
+              <p style="margin-top: 30px; max-width: 400px; margin-left: auto; color: #aaa; line-height: 1.6;">
+                  We specialize in helping organizations grow with robust digital solutions tailored to current needs.
+              </p>
+          </div>
+      </section>
 
-        <!-- SECTION 2: TRANSITION -->
-        <div class="section" id="sec2">
-            <div class="content">
-                <span class="subtitle">ABOUT US</span>
-                <h1>GLOBAL DESIGN<br><b>& DEVELOPMENT.</b></h1>
-                <p>Click to View Portfolio</p>
-            </div>
-        </div>
+      <!-- 3. SERVICES -->
+      <section class="section-wrap" id="sec-services">
+          <div class="content-box">
+              <span style="font-size: 12px; letter-spacing: 2px; display:block; margin-bottom: 20px;">SERVICES</span>
+              <h1 class="text-5xl font-bold uppercase">Scalable<br>Digital Environments.</h1>
+          </div>
+      </section>
 
-        <!-- SECTION 3: EARTH REVEAL (Replacing Sun) -->
-        <div class="section" id="sec3">
-            <div class="content">
-                <span class="subtitle">SERVICES</span>
-                <h1>SCALABLE<br><b>DIGITAL ENVIRONMENTS.</b></h1>
-            </div>
-        </div>
+      <!-- 4. REALISM -->
+      <section class="section-wrap" id="sec-realism">
+          <div class="content-box">
+              <span style="font-size: 12px; letter-spacing: 2px; display:block; margin-bottom: 20px;">CAPABILITIES</span>
+              <h1 class="text-5xl font-bold uppercase">Three-Dimensional<br>Realism.</h1>
+              <p style="margin-top: 30px; max-width: 500px; color: #aaa; line-height: 1.6;">
+                  We use 3D as an expressive tool that can enhance an interface, tell a story, or transform an idea.
+              </p>
+          </div>
+      </section>
 
-        <!-- SECTION 4: REALISM -->
-        <div class="section" id="sec4">
-            <div class="content">
-                <span class="subtitle">SERVICES</span>
-                <h1>THREE-DIMENSIONAL<br><b>REALISM.</b></h1>
-                <p>We create adaptable and immersive digital spaces.</p>
-            </div>
-        </div>
-    </main>
+      <!-- Spacer for final scroll -->
+      <div style="height: 50vh;"></div>
 
-    <!-- DEPENDENCIES: Three.js + GSAP -->
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
+  </main>
+
+  <!-- LIBS -->
+  <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
         }
-    </script>
-    <!-- GSAP for Scroll Animations -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    }
+  </script>
+  
+  <!-- GSAP & ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 
-    <script type="module">
-        import * as THREE from 'three';
-        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+  <script type="module">
+    // --- 1. IMPORT LENIS & THREE ---
+    import Lenis from 'https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.esm.min.js';
+    import * as THREE from 'three';
 
-        // --- SETUP ---
-        const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene();
-        
-        // Fog to blend objects into the void
-        scene.fog = new THREE.FogExp2(0x050505, 0.02);
+    // --- 2. BOOT LENIS (The "Movement Engine") ---
+    const lenis = new Lenis({
+        duration: 1.2,          // The "weight" (higher = heavier)
+        easing: t => 1 - Math.pow(1 - t, 4), // Elastic ease out
+        smoothWheel: true,
+        smoothTouch: false,     // Native feel on mobile
+        lerp: 0.08              // Drag effect
+    });
 
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 0, 5); // Initial position
+    function scrollRAF(time) {
+        lenis.raf(time);
+        ScrollTrigger.update(); // Sync GSAP
+        requestAnimationFrame(scrollRAF);
+    }
+    requestAnimationFrame(scrollRAF);
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.outputColorSpace = THREE.SRGBColorSpace;
-        container.appendChild(renderer.domElement);
+    // --- 3. THREE.JS SETUP ---
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x050505, 0.0025); // Deep space fade
 
-        // --- LOADING MANAGER ---
-        const manager = new THREE.LoadingManager();
-        const progressEl = document.getElementById('progress');
-        const loaderEl = document.getElementById('loader');
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 0, 10);
 
-        manager.onProgress = (url, itemsLoaded, itemsTotal) => {
-            progressEl.style.width = (itemsLoaded / itemsTotal * 100) + '%';
-        };
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    container.appendChild(renderer.domElement);
 
-        manager.onLoad = () => {
-            // Fade out loader
-            gsap.to(loaderEl, { opacity: 0, duration: 1, onComplete: () => loaderEl.remove() });
-            initScrollAnimations();
-        };
+    // --- 4. CREATE WORLD (Earth, Atmosphere, Stars) ---
+    const group = new THREE.Group();
+    scene.add(group);
 
-        // --- OBJECTS ---
-        
-        // 1. STARFIELD
-        const starGeo = new THREE.BufferGeometry();
-        const starPos = [];
-        for(let i=0; i<4000; i++) {
-            const x = (Math.random() - 0.5) * 100;
-            const y = (Math.random() - 0.5) * 100;
-            const z = (Math.random() - 0.5) * 50; 
-            starPos.push(x,y,z);
-        }
-        starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
-        const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({color: 0xffffff, size: 0.05, transparent: true, opacity: 0.8}));
-        scene.add(stars);
+    // Textures
+    const texLoader = new THREE.TextureLoader();
+    const earthMat = new THREE.MeshPhongMaterial({
+        map: texLoader.load('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg'),
+        specularMap: texLoader.load('https://unpkg.com/three-globe/example/img/earth-water.png'),
+        normalMap: texLoader.load('https://unpkg.com/three-globe/example/img/earth-topology.png'),
+        specular: 0x333333,
+        shininess: 10
+    });
 
-        // 2. SATELLITE (The "Initial Model")
-        let satellite;
-        const gltfLoader = new GLTFLoader(manager);
-        
-        // Create a group to handle satellite rotation/position easier
-        const satGroup = new THREE.Group();
-        scene.add(satGroup);
+    const earth = new THREE.Mesh(new THREE.SphereGeometry(3.5, 64, 64), earthMat);
+    group.add(earth);
 
-        gltfLoader.load('satellite.glb', (gltf) => {
-            satellite = gltf.scene;
-            satellite.scale.set(0.5, 0.5, 0.5); // Adjust based on your model size
-            satellite.rotation.y = -Math.PI / 4;
-            satellite.rotation.x = Math.PI / 6;
-            satGroup.add(satellite);
-        }, undefined, (err) => {
-            console.warn("Satellite not found. Using placeholder.");
-            // Fallback if no file found
-            const geo = new THREE.BoxGeometry(1, 1, 2);
-            const mat = new THREE.MeshStandardMaterial({ color: 0x444444, roughness: 0.2, metalness: 0.8 });
-            satellite = new THREE.Mesh(geo, mat);
-            satGroup.add(satellite);
-        });
-
-        // 3. EARTH (The "Sun Replacement")
-        // We place it far away initially
-        const earthGroup = new THREE.Group();
-        earthGroup.position.set(0, -20, -50); // Start hidden below/behind
-        scene.add(earthGroup);
-
-        const texLoader = new THREE.TextureLoader(manager);
-        texLoader.setCrossOrigin('anonymous');
-        
-        // Earth Materials
-        const earthMat = new THREE.MeshPhongMaterial({
-            map: texLoader.load('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg'),
-            specularMap: texLoader.load('https://unpkg.com/three-globe/example/img/earth-water.png'),
-            normalMap: texLoader.load('https://unpkg.com/three-globe/example/img/earth-topology.png'),
-            specular: 0x333333,
-            shininess: 15
-        });
-
-        const earthMesh = new THREE.Mesh(new THREE.SphereGeometry(10, 64, 64), earthMat);
-        earthGroup.add(earthMesh);
-
-        // Atmosphere Glow (Shader)
-        const vertexShader = `
+    // Atmosphere Glow Shader
+    const atmosMat = new THREE.ShaderMaterial({
+        vertexShader: `
             varying vec3 vNormal;
             void main() {
                 vNormal = normalize(normalMatrix * normal);
                 gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
             }
-        `;
-        const fragmentShader = `
+        `,
+        fragmentShader: `
             varying vec3 vNormal;
             void main() {
-                float intensity = pow(0.6 - dot(vNormal, vec3(0, 0, 1.0)), 4.0);
-                gl_FragColor = vec4(0.2, 0.5, 1.0, 1.0) * intensity;
+                float intensity = pow(0.65 - dot(vNormal, vec3(0, 0, 1.0)), 4.0);
+                gl_FragColor = vec4(0.2, 0.6, 1.0, 1.0) * intensity;
             }
-        `;
-        const atmos = new THREE.Mesh(
-            new THREE.SphereGeometry(12, 64, 64),
-            new THREE.ShaderMaterial({
-                vertexShader, fragmentShader, 
-                blending: THREE.AdditiveBlending, side: THREE.BackSide, transparent: true
-            })
-        );
-        earthGroup.add(atmos);
+        `,
+        blending: THREE.AdditiveBlending,
+        side: THREE.BackSide,
+        transparent: true
+    });
+    const atmos = new THREE.Mesh(new THREE.SphereGeometry(3.75, 64, 64), atmosMat);
+    group.add(atmos);
 
-        // LIGHTING
-        const ambientLight = new THREE.AmbientLight(0x111111);
-        scene.add(ambientLight);
+    // Stars
+    const starGeo = new THREE.BufferGeometry();
+    const starPos = [];
+    for(let i=0; i<4000; i++) {
+        starPos.push((Math.random()-0.5)*800, (Math.random()-0.5)*800, (Math.random()-0.5)*800);
+    }
+    starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
+    const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({color: 0xffffff, size: 0.5, transparent: true, opacity: 0.6}));
+    scene.add(stars);
 
-        // Main Light (Sunlight)
-        const mainLight = new THREE.DirectionalLight(0xffffff, 2);
-        mainLight.position.set(5, 3, 5);
-        scene.add(mainLight);
+    // Lighting
+    const sunLight = new THREE.DirectionalLight(0xffffff, 2.0);
+    sunLight.position.set(10, 5, 15); // Start position
+    scene.add(sunLight);
+    scene.add(new THREE.AmbientLight(0x111111));
 
-        // Blue Rim Light (for cinematic effect)
-        const rimLight = new THREE.SpotLight(0x0088ff, 5);
-        rimLight.position.set(-5, 5, -5);
-        rimLight.lookAt(0,0,0);
-        scene.add(rimLight);
+    // --- 5. ANIMATION LOOP ---
+    function animate() {
+        requestAnimationFrame(animate);
+        earth.rotation.y += 0.0005; // Gentle constant rotation
+        stars.rotation.y -= 0.0001;
+        renderer.render(scene, camera);
+    }
+    animate();
 
+    // --- 6. MASTER TIMELINE (The "Scroll Engine") ---
+    gsap.registerPlugin(ScrollTrigger);
 
-        // --- ANIMATION LOOP ---
-        const clock = new THREE.Clock();
-
-        function animate() {
-            requestAnimationFrame(animate);
-            const delta = clock.getDelta();
-
-            // Idle Animations
-            if(satellite) satGroup.rotation.y += 0.05 * delta;
-            earthGroup.rotation.y += 0.02 * delta;
-            stars.rotation.y -= 0.01 * delta;
-
-            renderer.render(scene, camera);
-        }
-        animate();
-
-
-        // --- GSAP SCROLL ANIMATIONS ---
-        gsap.registerPlugin(ScrollTrigger);
-
-        function initScrollAnimations() {
-            
-            // SECTION 1 -> 2: LEAVE SATELLITE
-            // Camera moves back, Satellite floats up and away
-            const tl1 = gsap.timeline({
-                scrollTrigger: {
-                    trigger: "#sec1",
-                    start: "top top",
-                    end: "bottom top",
-                    scrub: 1
+    function buildScroll() {
+        const tl = gsap.timeline({
+            defaults: { ease: 'none' }, // Important: scrubbing handles the easing
+            scrollTrigger: {
+                trigger: '#content-wrapper',
+                start: 'top top',
+                end: 'bottom bottom',
+                scrub: 1, // <--- The ELASTIC FEEL (1s lag)
+                snap: {
+                    snapTo: 'labels', // Magnet to timeline labels
+                    duration: { min: 0.4, max: 0.8 },
+                    delay: 0.05,
+                    ease: 'power1.inOut' // The "Decisive Slot-in"
                 }
-            });
-            
-            tl1.to(camera.position, { z: 8, y: -2 }, "start")
-               .to(satGroup.position, { y: 3, x: -3, z: 2 }, "start")
-               .to(satGroup.rotation, { x: 1, y: 1 }, "start")
-               .to(".content", { opacity: 1, y: 0, stagger: 0.1 }, "start"); // Reveal text
-
-
-            // SECTION 2 -> 3: REVEAL EARTH (THE "SUN" MOMENT)
-            // Camera turns or moves to face the massive Earth rising
-            const tl2 = gsap.timeline({
-                scrollTrigger: {
-                    trigger: "#sec2",
-                    start: "top top",
-                    end: "bottom top",
-                    scrub: 1
-                }
-            });
-
-            // Move Earth into view (It replaces the Sun as the massive light/body)
-            tl2.to(earthGroup.position, { y: -5, z: -20 }, "move") // Bring Earth up
-               .to(camera.position, { z: 5, y: 0 }, "move") 
-               .to(satGroup.position, { y: 10 }, "move") // Satellite flies away
-               .to(mainLight.position, { x: -10 }, "move"); // Shift light for drama
-
-
-            // SECTION 3 -> 4: ORBIT EARTH / ECLIPSE
-            const tl3 = gsap.timeline({
-                scrollTrigger: {
-                    trigger: "#sec3",
-                    start: "top top",
-                    end: "bottom top",
-                    scrub: 1
-                }
-            });
-
-            // Dramatic close up or silhouette
-            tl3.to(camera.position, { z: 25 }, "epic") // Zoom out to see full majesty
-               .to(earthGroup.scale, { x: 1.2, y: 1.2, z: 1.2 }, "epic")
-               .to(atmos.material.uniforms, { opacity: 0.8 }, "epic");
-
-            // Text Animations (Fade in/out for each section)
-            document.querySelectorAll('.section').forEach((sec) => {
-                gsap.fromTo(sec.querySelector('.content'), 
-                    { opacity: 0, y: 50 },
-                    { 
-                        opacity: 1, y: 0, 
-                        scrollTrigger: {
-                            trigger: sec,
-                            start: "top 60%",
-                            end: "top 20%",
-                            scrub: 0.5
-                        }
-                    }
-                );
-            });
-        }
-
-        // Handle Resize
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            }
         });
-    </script>
+
+        // -- SCENE 1: HERO (Start) --
+        tl.addLabel('start');
+
+        // -- TRANSITION TO SCENE 2 (About) --
+        // Camera zooms in, Earth rotates & moves left
+        tl.to(group.position, { x: -3.5, y: -1, z: 0 }, 'scene2')
+          .to(camera.position, { z: 9 }, 'scene2')
+          .to(group.rotation, { y: 1.5, x: 0.2 }, 'scene2')
+          .to(sunLight.position, { x: -5, y: 3, z: 10 }, 'scene2') // Move light
+          .addLabel('about');
+
+        // -- TRANSITION TO SCENE 3 (Services) --
+        // Camera moves slightly, Earth Centers
+        tl.to(group.position, { x: 0, y: 2, z: -2 }, 'scene3')
+          .to(camera.position, { z: 8 }, 'scene3')
+          .to(group.rotation, { y: 3.0 }, 'scene3')
+          .to(sunLight.position, { x: 10, y: 5, z: 5 }, 'scene3')
+          .addLabel('services');
+
+        // -- TRANSITION TO SCENE 4 (Realism) --
+        // Earth drops down, look at horizon/atmosphere
+        tl.to(group.position, { x: 0, y: -6, z: -5 }, 'scene4')
+          .to(camera.position, { z: 6 }, 'scene4')
+          .to(group.rotation, { x: 0.5, y: 4.0 }, 'scene4')
+          .addLabel('realism');
+
+        // Text Reveals
+        document.querySelectorAll('.content-box').forEach((box) => {
+            gsap.to(box, {
+                opacity: 1,
+                y: 0,
+                duration: 1,
+                scrollTrigger: {
+                    trigger: box.parentElement,
+                    start: "top 70%",
+                    end: "top 30%",
+                    scrub: 0.5
+                }
+            });
+        });
+    }
+
+    // Init Logic
+    window.addEventListener('load', () => {
+        // Fade loader
+        gsap.to('#loader', { opacity: 0, duration: 0.8, onComplete: () => {
+            document.getElementById('loader').remove();
+            buildScroll(); // Start scroll logic after load
+        }});
+    });
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+  </script>
 </body>
 </html>
