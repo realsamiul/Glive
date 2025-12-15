@@ -105,6 +105,7 @@
     #loader { 
         position: fixed; inset: 0; background: #000; z-index: 999; 
         display: flex; flex-direction: column; align-items: center; justify-content: center; 
+        transition: opacity 0.5s ease;
     }
     .loader-ring {
         width: 50px; height: 50px; border: 2px solid #333; border-top: 2px solid #fff; 
@@ -221,7 +222,6 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(IS_PHONE ? 1.0 : Math.min(window.devicePixelRatio, 1.5));
     
-    // Performance: Simple Tone Mapping on Mobile
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     if(IS_PHONE) {
         renderer.toneMapping = THREE.NoToneMapping;
@@ -230,7 +230,7 @@
         renderer.toneMappingExposure = 1.1;
     }
     
-    // WebGL Context Recovery (High Impact #3)
+    // WebGL Context Recovery
     renderer.getContext().canvas.addEventListener('webglcontextlost', (e) => {
         e.preventDefault();
         location.reload(); 
@@ -238,15 +238,24 @@
 
     container.appendChild(renderer.domElement);
 
-    // --- 4. ASSETS ---
+    // --- 4. ASSETS (The Fix) ---
     const manager = new THREE.LoadingManager();
     const loaderRing = document.querySelector('.loader-ring');
+    
+    // Visual Feedback
     manager.onProgress = (url, loaded, total) => {
-        loaderRing.style.transform = `rotate(${(loaded / total) * 360}deg)`;
+        if(loaderRing) loaderRing.style.transform = `rotate(${(loaded / total) * 360}deg)`;
+    };
+    
+    // Non-blocking Error (won't stop the manager)
+    manager.onError = (url) => {
+        console.error('Asset failed (skipping):', url);
     };
 
     const texLoader = new THREE.TextureLoader(manager);
-    const CDN = 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r160/examples/textures/planets/';
+    
+    // Use Fast, Reliable CDN
+    const CDN = 'https://unpkg.com/three-globe/example/img/';
 
     const earthGroup = new THREE.Group();
     scene.add(earthGroup);
@@ -254,10 +263,13 @@
     const earthRes = IS_PHONE ? 32 : 64;
     const earthGeo = new THREE.SphereGeometry(3, earthRes, earthRes);
     
+    // Load Textures Safely
+    const loadTex = (url) => texLoader.load(url, undefined, undefined, (err) => console.warn('Texture err', err));
+
     const earthMat = new THREE.MeshPhongMaterial({
-        map: texLoader.load(CDN + 'earth_atmos_2048.jpg'),
-        specularMap: texLoader.load(CDN + 'earth_specular_2048.jpg'),
-        normalMap: texLoader.load(CDN + 'earth_normal_2048.jpg'),
+        map: loadTex(CDN + 'earth-blue-marble.jpg'),
+        specularMap: loadTex(CDN + 'earth-water.png'),
+        normalMap: loadTex(CDN + 'earth-topology.png'),
         normalScale: new THREE.Vector2(0.5, 0.5),
         specular: 0x333333,
         shininess: 5
@@ -332,7 +344,7 @@
         // 1. HERO
         scrollTL.addLabel('hero');
 
-        // 2. ABOUT (Fix: Label First - High Impact #1)
+        // 2. ABOUT
         scrollTL.addLabel('about')
                 .to(earthGroup.position, { ...KF.about.pos, duration: 2, ease: 'power2.inOut' })
                 .to(earthGroup.rotation, { y: KF.about.rot.y, duration: 2, ease: 'power2.inOut' }, '<');
@@ -357,12 +369,21 @@
                 .to('#canvas-container', { opacity: 0.3, duration: 2 }, '<');
     }
 
-    // --- 7. STARTUP & EVENTS ---
-    manager.onLoad = () => {
-        gsap.to('#loader', { opacity: 0, duration: 0.5, onComplete: () => document.getElementById('loader').remove() });
-        buildTimeline();
-        animate();
-    };
+    // --- 7. STARTUP (FAILSAFE) ---
+    // Force start after 5 seconds even if assets fail
+    const failsafe = setTimeout(() => startApp(), 5000);
+
+    function startApp() {
+        clearTimeout(failsafe);
+        const loader = document.getElementById('loader');
+        if(loader) {
+            gsap.to(loader, { opacity: 0, duration: 0.5, onComplete: () => loader.remove() });
+            buildTimeline();
+            animate();
+        }
+    }
+
+    manager.onLoad = startApp;
 
     function animate() {
         requestAnimationFrame(animate);
@@ -378,7 +399,7 @@
         buildTimeline();
     });
 
-    // Orientation Change (High Impact #2)
+    // Orientation Change
     window.addEventListener('orientationchange', () => {
         setTimeout(() => ScrollTrigger.refresh(), 350);
     });
